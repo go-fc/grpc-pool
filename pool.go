@@ -22,19 +22,16 @@ var (
 )
 
 // Factory is a function type creating a grpc client
-type Factory func() (*grpc.ClientConn, error)
-
-// FactoryWithContext is a function type creating a grpc client
 // that accepts the context parameter that could be passed from
-// Get or NewWithContext method.
-type FactoryWithContext func(context.Context) (*grpc.ClientConn, error)
+// Get or New method.
+type Factory func(context.Context) (*grpc.ClientConn, error)
 
 // Pool is the grpc client pool
 type Pool struct {
 	mu sync.Mutex
 
 	clients         chan ClientConn
-	factory         FactoryWithContext
+	factory         Factory
 	idleTimeout     time.Duration
 	maxLifeDuration time.Duration
 }
@@ -50,20 +47,11 @@ type ClientConn struct {
 	unhealthy     bool
 }
 
-// New creates a new clients pool with the given initial and maximum capacity,
-// and the timeout for the idle clients. Returns an error if the initial
-// clients could not be created
-func New(factory Factory, init, capacity int, idleTimeout time.Duration,
-	maxLifeDuration ...time.Duration) (*Pool, error) {
-	return NewWithContext(context.Background(), func(ctx context.Context) (*grpc.ClientConn, error) { return factory() },
-		init, capacity, idleTimeout, maxLifeDuration...)
-}
-
-// NewWithContext creates a new clients pool with the given initial and maximum
+// New creates a new clients pool with the given initial and maximum
 // capacity, and the timeout for the idle clients. The context parameter would
 // be passed to the factory method during initialization. Returns an error if the
 // initial clients could not be created.
-func NewWithContext(ctx context.Context, factory FactoryWithContext, init, capacity int, idleTimeout time.Duration,
+func New(ctx context.Context, factory Factory, init, capacity int, idleTimeout time.Duration,
 	maxLifeDuration ...time.Duration) (*Pool, error) {
 
 	if capacity <= 0 {

@@ -11,7 +11,8 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	p, err := New(func() (*grpc.ClientConn, error) {
+	ctx := context.Background()
+	p, err := New(ctx, func(_ context.Context) (*grpc.ClientConn, error) {
 		return grpc.Dial("example.com", grpc.WithInsecure())
 	}, 1, 3, 0)
 	if err != nil {
@@ -95,7 +96,8 @@ func TestNew(t *testing.T) {
 }
 
 func TestTimeout(t *testing.T) {
-	p, err := New(func() (*grpc.ClientConn, error) {
+	ctx := context.Background()
+	p, err := New(ctx, func(_ context.Context) (*grpc.ClientConn, error) {
 		return grpc.Dial("example.com", grpc.WithInsecure())
 	}, 1, 1, 0)
 	if err != nil {
@@ -113,7 +115,7 @@ func TestTimeout(t *testing.T) {
 	// We want to fetch a second one, with a timeout. If the timeout was
 	// ommitted, the pool would wait indefinitely as it'd wait for another
 	// client to get back into the queue
-	ctx, _ := context.WithDeadline(context.Background(), time.Now().Add(10*time.Millisecond))
+	ctx, _ = context.WithDeadline(context.Background(), time.Now().Add(10*time.Millisecond))
 	_, err2 := p.Get(ctx)
 	if !errors.Is(err2, context.DeadlineExceeded) {
 		t.Errorf("Expected error \"%s\" but got \"%s\"", ErrTimeout, err2.Error())
@@ -121,7 +123,8 @@ func TestTimeout(t *testing.T) {
 }
 
 func TestMaxLifeDuration(t *testing.T) {
-	p, err := New(func() (*grpc.ClientConn, error) {
+	ctx := context.Background()
+	p, err := New(ctx, func(_ context.Context) (*grpc.ClientConn, error) {
 		return grpc.Dial("example.com", grpc.WithInsecure())
 	}, 1, 1, 0, 1)
 	if err != nil {
@@ -144,7 +147,7 @@ func TestMaxLifeDuration(t *testing.T) {
 
 	// Let's also make sure we don't prematurely close the connection
 	count := 0
-	p, err = New(func() (*grpc.ClientConn, error) {
+	p, err = New(ctx, func(_ context.Context) (*grpc.ClientConn, error) {
 		count++
 		return grpc.Dial("example.com", grpc.WithInsecure())
 	}, 1, 1, 0, time.Minute)
@@ -176,7 +179,8 @@ func TestMaxLifeDuration(t *testing.T) {
 }
 
 func TestPoolClose(t *testing.T) {
-	p, err := New(func() (*grpc.ClientConn, error) {
+	ctx := context.Background()
+	p, err := New(ctx, func(_ context.Context) (*grpc.ClientConn, error) {
 		return grpc.Dial("example.com", grpc.WithInsecure())
 	}, 1, 1, 0)
 	if err != nil {
@@ -205,7 +209,7 @@ func TestContextCancelation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	_, err := NewWithContext(ctx, func(ctx context.Context) (*grpc.ClientConn, error) {
+	_, err := New(ctx, func(ctx context.Context) (*grpc.ClientConn, error) {
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
@@ -224,7 +228,7 @@ func TestContextTimeout(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Microsecond)
 	defer cancel()
 
-	_, err := NewWithContext(ctx, func(ctx context.Context) (*grpc.ClientConn, error) {
+	_, err := New(ctx, func(ctx context.Context) (*grpc.ClientConn, error) {
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
@@ -242,7 +246,8 @@ func TestContextTimeout(t *testing.T) {
 }
 
 func TestGetContextTimeout(t *testing.T) {
-	p, err := New(func() (*grpc.ClientConn, error) {
+	ctx := context.Background()
+	p, err := New(ctx, func(_ context.Context) (*grpc.ClientConn, error) {
 		return grpc.Dial("example.com", grpc.WithInsecure())
 	}, 1, 1, 0)
 
@@ -265,7 +270,7 @@ func TestGetContextTimeout(t *testing.T) {
 }
 
 func TestGetContextFactoryTimeout(t *testing.T) {
-	p, err := NewWithContext(context.Background(), func(ctx context.Context) (*grpc.ClientConn, error) {
+	p, err := New(context.Background(), func(ctx context.Context) (*grpc.ClientConn, error) {
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
