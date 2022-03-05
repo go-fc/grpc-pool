@@ -2,6 +2,7 @@ package grpcpool
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -114,7 +115,7 @@ func TestTimeout(t *testing.T) {
 	// client to get back into the queue
 	ctx, _ := context.WithDeadline(context.Background(), time.Now().Add(10*time.Millisecond))
 	_, err2 := p.Get(ctx)
-	if err2 != ErrTimeout {
+	if !errors.Is(err2, context.DeadlineExceeded) {
 		t.Errorf("Expected error \"%s\" but got \"%s\"", ErrTimeout, err2.Error())
 	}
 }
@@ -258,7 +259,7 @@ func TestGetContextTimeout(t *testing.T) {
 	// wait for the deadline to pass
 	time.Sleep(time.Millisecond)
 	_, err = p.Get(ctx)
-	if err != ErrTimeout { // it should be context.DeadlineExceeded
+	if !errors.Is(err, context.DeadlineExceeded) {
 		t.Errorf("Returned error was not ErrTimeout, but the context was timed out before the Get invocation")
 	}
 }
