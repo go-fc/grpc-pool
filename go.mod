@@ -1,4 +1,4 @@
-module github.com/Velocidex/grpc-go-pool
+module github.com/vgough/grpc-go-pool
 
 go 1.17
 
