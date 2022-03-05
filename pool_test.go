@@ -230,13 +230,13 @@ func TestContextTimeout(t *testing.T) {
 			return nil, ctx.Err()
 
 		// wait for the deadline to pass
-		case <-time.After(time.Millisecond):
+		case <-time.After(100*time.Millisecond):
 			return grpc.Dial("example.com", grpc.WithInsecure())
 		}
 
 	}, 1, 1, 0)
 
-	if err != context.DeadlineExceeded {
+	if !errors.Is(err, context.DeadlineExceeded) {
 		t.Errorf("Returned error was not context.DeadlineExceeded, but the context was timed out before the initialization")
 	}
 }
@@ -271,7 +271,7 @@ func TestGetContextFactoryTimeout(t *testing.T) {
 			return nil, ctx.Err()
 
 		// wait for the deadline to pass
-		case <-time.After(time.Millisecond):
+		case <-time.After(100*time.Millisecond):
 			return grpc.Dial("example.com", grpc.WithInsecure())
 		}
 
