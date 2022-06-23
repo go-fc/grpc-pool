@@ -1,8 +1,8 @@
-module github.com/vgough/grpc-go-pool
+module github.com/go-funcards/grpc-pool
 
 go 1.17
 
-require google.golang.org/grpc v1.44.0
+require google.golang.org/grpc v1.47.0
 
 require (
 	github.com/golang/protobuf v1.5.2 // indirect
