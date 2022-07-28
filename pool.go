@@ -28,13 +28,13 @@ type Factory func(context.Context) (*grpc.ClientConn, error)
 
 type Config struct {
 	Capacity struct {
-		Initial uint `yaml:"initial" env:"INITIAL" env-default:"2"`
-		Max     uint `yaml:"max" env:"MAX" env-default:"50"`
-	} `yaml:"capacity" env-prefix:"CAPACITY_"`
+		Initial uint `mapstructure:"initial" yaml:"initial" env:"INITIAL" env-default:"2"`
+		Max     uint `mapstructure:"max" yaml:"max" env:"MAX" env-default:"50"`
+	} `mapstructure:"capacity" yaml:"capacity" env-prefix:"CAPACITY_"`
 	Time struct {
-		Idle    time.Duration `yaml:"idle" env:"IDLE" env-default:"5s"`
-		MaxLife time.Duration `yaml:"max_life" env:"MAX_LIFE" env-default:"15m"`
-	} `yaml:"time" env-prefix:"TIME_"`
+		Idle    time.Duration `mapstructure:"idle" yaml:"idle" env:"IDLE" env-default:"5s"`
+		MaxLife time.Duration `mapstructure:"max_life" yaml:"max_life" env:"MAX_LIFE" env-default:"15m"`
+	} `mapstructure:"time" yaml:"time" env-prefix:"TIME_"`
 }
 
 func (cfg *Config) NewPool(ctx context.Context, factory Factory) (*Pool, error) {
