@@ -1,4 +1,4 @@
-module github.com/go-funcards/grpc-pool
+module github.com/go-fc/grpc-pool
 
 go 1.17
 
